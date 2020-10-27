@@ -6,7 +6,14 @@
         "virtualAddresses": [
             "{{vs_ip}}"
         ],
-        "pool": "app_pool"
+        "securityLogProfiles": [
+            {"bigip": "/Common/Log all requests"}
+        ],
+        "pool": "app_pool",
+        "profileHTTP": { "use": "http_prof_mid_security" },
+        "policyWAF": {
+            "use": "indiviual_WAF_policy"
+        }
     },
     "app_pool": {
         "class": "Pool",
@@ -25,5 +32,29 @@
                 ]
             }
         ]
+    },
+    "indiviual_WAF_policy": {
+        "class": "WAF_Policy",
+        "ignoreChanges": true,
+        "url": "https://raw.githubusercontent.com/f5devcentral/f5-asm-policy-templates/master/generic_ready_template/Rapid_Depolyment_Policy_13_1.xml"
+    },
+    "http_prof_mid_security": {
+        "class": "HTTP_Profile",
+        "proxyType": "reverse",
+        "allowedResponseHeaders": [
+          "content-type",
+          "set-cookie",
+          "location",
+          "date",
+          "expires",
+          "cache-control",
+          "pragma",
+          "vary",
+          "content-encoding",
+          "keep-alive",
+          "connection" 
+        ],
+        "fallbackRedirect": "https://www.f5.com",
+        "xForwardedFor": true
     }
 }
