@@ -1,0 +1,77 @@
+{
+    "$schema": "https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json",
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "d6f7084e-b6b1-4bad-8e9a-0c67d6f35232",
+        "label": "Test AS3 application",
+        "remark": "Test AS3 application",
+        "WorkshopExample":{
+            "class": "Tenant",
+            "web_app": {
+                "class": "Application",
+                "template": "http",
+                "serviceMain": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "{{vs_ip}}"
+                    ],
+                    "securityLogProfiles": [
+                        {"bigip": "/Common/Log all requests"}
+                    ],
+                    "pool": "app_pool",
+                    "profileHTTP": { "use": "http_prof_mid_security" },
+                    "policyWAF": {
+                        "use": "indiviual_WAF_policy"
+                    }
+                },
+                "app_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                {% set comma = joiner(",") %}
+                                {% for mem in pool_members %}
+                                    {{comma()}} "{{  hostvars[mem]['ansible_host']  }}"
+                                {% endfor %}
+            
+                            ]
+                        }
+                    ]
+                },
+                "indiviual_WAF_policy": {
+                    "class": "WAF_Policy",
+                    "ignoreChanges": false,
+                    "url": "https://raw.githubusercontent.com/gkor75/CI-CD-demo01/master/files/ASM_policy_fundamental_for_Linux.xml",
+                    "enforcementMode": "blocking"
+                },
+                "http_prof_mid_security": {
+                    "class": "HTTP_Profile",
+                    "proxyType": "reverse",
+                    "allowedResponseHeaders": [
+                      "content-type",
+                      "set-cookie",
+                      "location",
+                      "date",
+                      "expires",
+                      "cache-control",
+                      "pragma",
+                      "vary",
+                      "content-encoding",
+                      "keep-alive",
+                      "connection" 
+                    ],
+                    "fallbackRedirect": "https://www.f5.com",
+                    "xForwardedFor": true
+                }
+            }            
+        }
+    }
+}
