@@ -1,0 +1,27 @@
+---
+- name: LINKLIGHT AS3
+  hosts: lb
+  connection: local
+  gather_facts: false
+
+  vars:
+    pool_members: "{{ groups['web'] }}"
+
+  tasks:
+    - name: ATC Check AS3 connection
+      include_role:
+        name: atc_deploy
+      vars:
+        atc_method: GET
+        # Select the service as AS3, Device, or Telemetry
+        atc_service: AS3
+        provider:
+          server: "{{ ansible_host }}"
+          server_port: "443"
+          user: "{{ ansible_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          validate_certs: "false"
+          auth_provider: tmos
+
+    - debug: var=atc_GET_status
+
