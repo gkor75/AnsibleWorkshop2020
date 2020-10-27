@@ -1,0 +1,37 @@
+---
+- name: Deleting AS3 
+  hosts: lb
+  connection: local
+  gather_facts: false
+
+  vars:
+    pool_members: "{{ groups['web'] }}"
+
+  tasks:
+#    - name: CREATE AS3 INNER BODY
+#      set_fact:
+#        as3_app_body: "{{ lookup('template', 'j2/as3_template.j2', split_lines=False) }}"
+
+#    - name: CREATE AS3 JSON BODY
+#      set_fact:
+#        as3_content: "{{ lookup('template', 'j2/tenant_base.j2', split_lines=False) }}"
+
+    - name: AS3 delete via ATC
+      include_role:
+        name: atc_deploy
+      vars:
+        atc_method: DELETE
+#        atc_declaration: "{{ as3_content }}"
+        # Select the service as AS3, Device, or Telemetry
+        atc_service: AS3
+        as3_tenant: WorkshopExample
+        provider:
+          server: "{{ ansible_host }}"
+          server_port: "443"
+          user: "{{ ansible_user }}"
+          password: "{{ ansible_ssh_pass }}"
+          validate_certs: "false"
+          auth_provider: tmos
+
+    - debug: var=atc_GET_status
+
